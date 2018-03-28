@@ -1,6 +1,9 @@
 //reduction.cu
 //made by Carrick McClain
 
+#include <cuda.h>
+#include <cuda_runtime.h>
+
 #define SECTION_SIZE 10
 #define BLOCK_SIZE 16
 
@@ -14,5 +17,13 @@ __global__ void reduction_add ()
         if (index < 2 * BLOCK_SIZE)
             XY[index] += XY[index - stride];
         __syncthreads();
+    }
+}
+
+int main (int argc, char** argv)
+{
+    if (argc < 2)
+    {
+        cerr << "expected args: input file name" << endl;
     }
 }
