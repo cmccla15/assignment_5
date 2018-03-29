@@ -15,8 +15,6 @@
 #include <sstream>
 #include <string>
 
-#define BLOCK_SIZE 1024
-
 using namespace std;
 
 inline void gpu_handle_error( cudaError_t err, const char* file, int line, int abort = 1 )
