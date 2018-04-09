@@ -5,16 +5,19 @@
 
     Sources:
         http://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/reduction/doc/reduction.pdf
+        some guidance from https://stackoverflow.com
 */
 
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <string>
-#include <assert>
+#include <string.h>
+#include <assert.h>
 
 #define NUM_BLOCKS 2
 #define BLOCK_WIDTH 8
@@ -51,7 +54,7 @@ __global__ void reduction_add (float* X, float* Y)
             XY[tx] += XY[tx + stride];
         __syncthreads();
     }
-    if (ty == 0)
+    if (tx == 0)
         Y[blockIdx.x] = XY[0];
 }
 
@@ -59,18 +62,12 @@ __global__ void reduction_add (float* X, float* Y)
 
 int main (int argc, char** argv)
 {
-    if (argc < 2)
-    {
-        cerr << "expected args: input file name" << endl;
-        exit (-1);
-    }
-
     cudaError_t err;
     int idx = 0;
     int sum = 0;
     char chars[11];
-    float* h_input_data = malloc (NUM_FLOATS * sizeof(float));
-    float* h_output_data = malloc (NUM_FLOATS * sizeof(float));
+    float* h_input_data = (float*)malloc (NUM_FLOATS * sizeof(float));
+    float* h_output_data = (float*)malloc (NUM_FLOATS * sizeof(float));
     float* d_input_data;
     float* d_output_data;
     ifstream infile;
@@ -82,7 +79,7 @@ int main (int argc, char** argv)
         while (infile.good())
         {
             infile.getline(chars, 256, ',');
-            h_input_data[idx] = (float)(chars);
+            h_input_data[idx] = (float)(strtod(chars, NULL));
             idx++;
         }
         infile.close();
@@ -91,9 +88,9 @@ int main (int argc, char** argv)
 
     assert ((sizeof(h_input_data) / sizeof(float)) == 100);
 
-    err = cudaMalloc ((void**) &d_input_data, h_input_data, NUM_FLOATS * sizeof(float));
+    err = cudaMalloc ((void**) &d_input_data, NUM_FLOATS * sizeof(float));
     gpu_err_chk(err);
-    err = cudaMalloc ((void**) &d_output_data, h_output_data, NUM_FLOATS * sizeof(float));
+    err = cudaMalloc ((void**) &d_output_data, NUM_FLOATS * sizeof(float));
     gpu_err_chk(err);
     err = cudaMemcpy (d_input_data, h_input_data,
                       NUM_FLOATS * sizeof(float), cudaMemcpyHostToDevice);
