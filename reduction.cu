@@ -67,6 +67,7 @@ int main (int argc, char** argv)
 
     cudaError_t err;
     int idx = 0;
+    int sum = 0;
     char chars[11];
     float* h_input_data = malloc (NUM_FLOATS * sizeof(float));
     float* h_output_data = malloc (NUM_FLOATS * sizeof(float));
@@ -107,6 +108,17 @@ int main (int argc, char** argv)
     err = cudaMemcpy(   h_output_data, d_output_data,
                         NUM_FLOATS * sizeof(float),
                         cudaMemcpyDeviceToHost  );
+    gpu_err_chk(err);
 
+    idx = 0;
+    while (h_output_data != NULL)
+    {
+        sum += h_output_data[idx];
+        idx++;
+    }
+
+    cout << "Sum of floats: " << sum;
+
+    
     return 0;
 }
